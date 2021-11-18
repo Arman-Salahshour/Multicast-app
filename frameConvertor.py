@@ -39,7 +39,7 @@ def start(number=1000,gap=10):
     video_paths=glob("videos/*")
     save_dir="save"
     for path in video_paths:
-        save_frame(path,save_dir,number=1000,gap=10)
+        save_frame(path,save_dir,number=number,gap=gap)
 
 if __name__ == '__main__':
     start(number=1000,gap=10)
