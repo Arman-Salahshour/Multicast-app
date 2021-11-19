@@ -1,5 +1,6 @@
 import json
 import base64
+import os
 from glob import glob
 
 
@@ -10,7 +11,9 @@ def sortPath(path):
 
 def convertor(file_path,data):
     file_name=file_path.split('\\')[1]
-    data[file_name]=[]
+    size=os.path.getsize(file_path)
+
+    data[file_name]={'size':size, 'imgs':[]}
     image_paths=glob(f"{file_path}\/\//*")
 
     """sort paths by the image index number"""
@@ -20,7 +23,7 @@ def convertor(file_path,data):
         with open(image_path, mode='rb') as img:
             binary_img = img.read()
             encoded_img = base64.encodebytes(binary_img).decode('utf-8')
-            data[file_name].append(encoded_img)
+            data[file_name]['imgs'].append(encoded_img)
 
 def start():
     #for saveing images
@@ -28,7 +31,7 @@ def start():
     file_paths=glob("save/*")
     for file_path in file_paths:
         convertor(file_path,data)
-    
+        
     json_images=json.dumps(data)
     return json_images
 
