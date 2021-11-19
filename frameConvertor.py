@@ -11,7 +11,7 @@ def make_dir(path):
     except OSError:
         print (f"Could not create directory with '{path}' name")
 
-def save_frame(video_path,save_dir,number=1000,gap=3):
+def save_frame(video_path,save_dir,number=1000,gap=10):
     """initialize a path for saving frames"""
     name=video_path.split('\\')[1].split('.')[0]
     save_path=os.path.join(save_dir,name)
@@ -35,11 +35,11 @@ def save_frame(video_path,save_dir,number=1000,gap=3):
 
 
 
-def start(number=1000,gap=10):
+def start(number=100,gap=10):
     video_paths=glob("videos/*")
     save_dir="save"
     for path in video_paths:
         save_frame(path,save_dir,number=number,gap=gap)
 
 if __name__ == '__main__':
-    start(number=1000,gap=10)
+    start(number=200,gap=5)
