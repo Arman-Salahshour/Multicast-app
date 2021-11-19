@@ -1,6 +1,7 @@
 import frameConvertor
 import imageToJsonConvertor
 import json
+from datetime import datetime
 from socket import socket
 from constants import *
 
@@ -34,17 +35,20 @@ def setTime(data):
         time+=length+1
 
     
-
-
+def getTime():
+    time=datetime.now()
+    hour=time.hour
+    print(hour)
     
 
 
 def init():
-    frameConvertor.start(number=200,gap=5)
+    # frameConvertor.start(number=200,gap=5)
     json_img=imageToJsonConvertor.start()
     json_imgDict=json.loads(json_img)
     setTime(json_imgDict)
-    print(json_imgDict['SpiderMan']['hour'])
+    print(json_imgDict['LookUp']['hour'])
+    getTime()
 
 
 
