@@ -32,23 +32,37 @@ def setTime(data):
     time=0
     for key in data:
         data[key]['hour']=f"{time}_{time+length}"
-        time+=length+1
+        time+=length
 
     
 def getTime():
     time=datetime.now()
     hour=time.hour
-    print(hour)
+    return hour
+
+def check_movieTime(data):
+    hour = getTime()
+    movie={}
+    for key in data:
+        time=data[key]['hour']
+        h1,h2=time.split('_')
+        h1,h2=(int(h1),int(h2))
+        if hour >= h1 or hour < h2:
+            movie['name']=key
+            movie['size']=data[key]['size']
+            movie['imgs']=data[key]['imgs']
+            return movie
+
     
 
 
 def init():
-    # frameConvertor.start(number=200,gap=5)
+    frameConvertor.start(number=200,gap=5)
     json_img=imageToJsonConvertor.start()
     json_imgDict=json.loads(json_img)
     setTime(json_imgDict)
-    print(json_imgDict['LookUp']['hour'])
-    getTime()
+    movie=check_movieTime(json_imgDict)
+    print(movie)
 
 
 
