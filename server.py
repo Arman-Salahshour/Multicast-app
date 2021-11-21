@@ -2,25 +2,10 @@ import frameConvertor
 import imageToJsonConvertor
 import json
 from datetime import datetime
-from socket import socket
+import socket
 from constants import *
-
-# class Network:
-#     def __init__(self,host,port):
-#         self.host = host
-#         self.port = port
-    
-#     def server(self):
-#         with socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#             s.bind((self.host, self.port))
-#             s.listen()
-#             conn,addr=s.accept()
-#             with conn:
-#                 print(f"server is connected to {addr}")
-#                 while True:
-#                     data=conn.recv(size).encode(format)
-#                     if not data: 
-#                         break
+import time
+import pandas as pd
 
 
 
@@ -33,6 +18,7 @@ def setTime(data):
     for key in data:
         data[key]['hour']=f"{time}_{time+length}"
         time+=length
+    return data
 
     
 def getTime():
@@ -42,27 +28,49 @@ def getTime():
 
 def check_movieTime(data):
     hour = getTime()
-    movie={}
+    programs={'movies':{},'live':{}}
     for key in data:
         time=data[key]['hour']
+        programs['movies'][key]=time
         h1,h2=time.split('_')
         h1,h2=(int(h1),int(h2))
         if hour >= h1 or hour < h2:
-            movie['name']=key
-            movie['size']=data[key]['size']
-            movie['imgs']=data[key]['imgs']
-            return movie
+            programs['live']['name']=key
+            programs['live']['size']=data[key]['size']
+            programs['live']['imgs']=data[key]['imgs']
+    return programs
 
-    
+def get_chanelFrame(data):
+    chanels=pd.DataFrame({
+        'movie':[],
+        'chanel':[],
+        'host':[],
+        'port':[],
+    })
+
+    for key in data:
+        df={
+        'movie':key,
+        'chanel':"",
+        'host':"",
+        'port':"",
+        }
+        chanels=chanels.append(df,ignore_index=True)
+    return chanels
+
+
+
+
 
 
 def init():
-    frameConvertor.start(number=200,gap=5)
-    json_img=imageToJsonConvertor.start()
-    json_imgDict=json.loads(json_img)
-    setTime(json_imgDict)
-    movie=check_movieTime(json_imgDict)
-    print(movie)
+    # frameConvertor.start(number=200,gap=5)
+    json_movieImg=imageToJsonConvertor.start()
+    json_movieImgDict=json.loads(json_movieImg)
+    json_movieImgDict=setTime(json_movieImgDict)
+    chanels=get_chanelFrame(json_movieImgDict)
+    # network=Network(host=host,port=port,data=json_imgDict,win=100)
+    # network.serverProtocol()
 
 
 
