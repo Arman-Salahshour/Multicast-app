@@ -3,94 +3,118 @@ import imageToJsonConvertor
 import json
 from datetime import datetime
 import socket
-from constants import *
+from server_constants import *
 import time
 import pandas as pd
 import random
 import numpy as np
 from _thread import *
 import threading
+import copy
+import warnings
+warnings.filterwarnings("ignore")
 
 class Network:
-    def __init__(self,host,port,chanels,data,keys,win):
+    def __init__(self,host,port,channels,data,keys,win):
         self.host = host
         self.port = port
-        self.chanels = chanels
+        self.channels = channels
         self.data = data
         self.keys = keys
         self.win=win
         self.lock=threading.Lock()
 
-    def get_livePrograms(self,):
+    def get_livePrograms(self,data):
         
         """extract movies schedule and live movie {name , size , imgs}"""
-        programs=check_movieTime(self.data)
+        programs=check_movieTime(data)
         movies=programs['movies']
         live_movieName=programs['live']['name']
         live_movieSize=programs['live']['size']
         live_movieImgs=programs['live']['imgs']
-        self.lock.release()
-        return movies, live_movieName, live_movieSize, live_movieImgs
+        # self.lock.release()
+        return programs,movies, live_movieName, live_movieSize, live_movieImgs
 
-    def sending_liveProgram(self,conn):
-        movies, live_movieName, live_movieSize, live_movieImgs=self.get_livePrograms()
-        """step 1 sending movies' schedule"""
-        json_movies=json.dumps(movies).encode(format)
-        conn.sendall(json_movies)
-        conn.sendall(end_moviesMsg.encode(format))
-
-        """step 2 sending live movie name"""
-        json_liveMovieName=json.dumps(live_movieName).encode(format)
-        conn.sendall(json_liveMovieName)
-        conn.sendall(end_liveMovieNameMsg.encode(format))
-
-        """step 3 sending live movie size"""
-        json_liveMovieSize=json.dumps(live_movieSize).encode(format)
-        conn.sendall(json_liveMovieSize)
-        conn.sendall(end_liveMovieSizeMsg.encode(format))
-
-        """step 4 sending live movie imgs"""
-        # for img in live_movieImgs:
-        #     json_img=json.dumps(img)
-            
-        
-
-        # for item in programs['live']['imgs']:
-        #     # time.sleep(2)
-        #     # json_programs=json.dumps({'data':programs['live']['imgs'][0]})
-        #     json_programs=json.dumps({'data':item})
-        #     win=100
-        #     for line in range(0,len(json_programs),win):
-        #         sending=json_programs[line:line+win]
-        #         conn.sendall(sending.encode('utf8'))
-        #     # conn.sendall(json_programs.encode(format))
-        time.sleep(2)
-        conn.sendall(end_sendingMsg.encode(format))
-        print('Sending has done')
-    
-        # print(len(msg))
-        # splitn=100
-        # for line in range(0,len(msg),splitn):
-        #     sending=msg[line:line+splitn]
-        #     conn.sendall(sending.encode('utf8'))
-        # conn.sendall(endSending.encode('utf8'))
-        # programs=check_movieTime(data)
-        # json_programs=json.dumps(programs,ident=4)
-        # conn.sendall(json_programs.encode(format))
-        # print('Sending has done')
 
     def connection_toClient(self,conn,addr,):
             self.lock.acquire()
-            self.data = setTime(self.data,self.keys)
             
             with conn:
                     print(f"server is connected to {addr[0]}:{addr[1]}")
                     while True:
-                        recv_data=conn.recv(txt_messageSize).decode(format)
+                        recv_data=conn.recv(txt_messageSize).decode(format).split(':')
+                        applicant=recv_data[0]
+                        
+                        '''if a channel send message'''
+                        if(applicant=='channel'):
+                            '''split the channel msg and number of channel'''
+                            msg=recv_data[1]
+                            channel=recv_data[2]
+                            '''if a channel wants to run itself, it will send this message to receive ip,port for server side of itself and programs' schedule time'''
+                            if msg==rqst_forTimeSchedule:
+                                '''if the channel is not active, the config file will be sent for the channel'''
+                                if (self.channels['active'][self.channels['number']==channel].all()==False):
+                                    self.channels['active'].loc[self.channels['number']==channel]=True
+                                    '''setTime function sets time for movies, specifically for each channel'''
+                                    channelData=setTime(copy.deepcopy(self.data),self.keys)
+
+                                    '''set data in channels data frame'''
+                                    self.channels['data'].loc[self.channels['number']==channel]=json.dumps(channelData)
+                                    
+                                    '''get movies' schedule time'''
+                                    programs=self.get_livePrograms(channelData)[0]['movies']
+
+                                    '''create channel's config dictionary'''
+                                    config={
+                                        'ip':self.channels['host'].loc[self.channels['number']==channel].values[0],
+                                        'port':self.channels['port'].loc[self.channels['number']==channel].values[0],
+                                        'programs':programs
+                                    }
+                                    
+                                    '''convert it to json file'''
+                                    config=json.dumps(config)
+                                    '''send config file'''
+                                    conn.sendall(config.encode(format))
+                                    time.sleep(0.5)
+                                    conn.sendall(end_sending.encode(format))
+
+                                    '''release thread lock'''
+                                    self.lock.release()
+                                    break
+                                else:
+                                    '''if the channel is active this block will be active'''
+                                    '''release thread lock'''
+                                    self.lock.release()
+                                    '''send a message for notice that this channel is active'''
+                                    conn.sendall(msg_active.encode(format))
+                                    time.sleep(0.5)
+                                    break
+                            
+                            
+                            elif msg==rqst_forImg:
+                                '''for sending images of live program'''
+                                channelData=self.channels['data'].loc[self.channels['number']==channel].values[0]
+
+                                '''convert json data to dictionary'''
+                                channelData=json.loads(channelData)
+
+                                '''get live program's images'''
+                                programs=self.get_livePrograms(channelData)[0]
+
+                                '''convert images to json file'''
+                                programs=json.dumps(programs)
+
+                                '''send json images'''
+                                conn.sendall(programs.encode(format))
+                                time.sleep(0.5)
+                                conn.sendall(end_sending.encode(format))
+                                print('Sending images has done')
+                                '''release thread lock'''
+                                self.lock.release()
+                                break
+                            
                         if not recv_data: 
                             break
-                        elif recv_data==rqst_forImg:
-                            self.sending_liveProgram(conn)
                         else:
                             pass
 
@@ -145,24 +169,28 @@ def check_movieTime(data):
             programs['live']['imgs']=data[key]['imgs']
     return programs
 
-def get_chanelFrame(data):
-    chanels=pd.DataFrame({
-        'chanel':[],
+def get_channelFrame(num):
+    channels=pd.DataFrame({
+        'number':[],
         'host':[],
         'port':[],
+        'data':[],
+        'active':[],
+
     })
     
-    for i in range(4):
+    for i in range(num):
         ip=host.split('.')
         ip[len(ip)-1]=str(int(ip[len(ip)-1])+i+1)
         ip=".".join(ip)
         df={
-        'chanel':f"{i+1}",
+        'number':f"{i+1}",
         'host':ip,
         'port':port,
+        'active':False,
         }
-        chanels=chanels.append(df,ignore_index=True)
-    return chanels
+        channels=channels.append(df,ignore_index=True)
+    return channels
 
 
 
@@ -180,11 +208,11 @@ def init():
     movies_name=[i for i in json_movieImgDict.keys()]
     '''set clock for stream for each movie'''
     json_movieImgDict=setTime(json_movieImgDict,movies_name)
-    '''define ip/port for each chanel'''
-    chanels=get_chanelFrame(json_movieImgDict)
+    '''define ip/port for each channel'''
+    channels=get_channelFrame(3)
     '''create an object for network'''
-    network=Network(host=host,port=port,chanels=chanels,data=json_movieImgDict,keys=movies_name,win=100)
-    '''run server to accept chanels' client side request'''
+    network=Network(host=host,port=port,channels=channels,data=json_movieImgDict,keys=movies_name,win=100)
+    '''run server to accept channels' client side request'''
     network.serverProtocol()
 
 
