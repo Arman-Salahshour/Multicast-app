@@ -12,9 +12,9 @@ class Network:
             self.receive_liveProgram()
 
     def start_channel(self):
+        msg=rqst_forTimeSchedule+f':{self.number}'
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as soc:
             soc.connect((host,port))
-            msg=rqst_forTimeSchedule+f':{self.number}'
             soc.sendall(msg.encode(format))
             while True:
                 recv=soc.recv(txt_messageSize).decode(format)
@@ -33,8 +33,8 @@ class Network:
             '''self.host and self.port include ip and port for channel server side '''
             self.host=self.data['ip']
             self.port=self.data['port']
-            self.programs=self.data['programs']
-            print(f'host:{self.host}\nport:{self.port}\nprograms:{self.programs}')
+            self.timing=self.data['programs']
+            print(f'host:{self.host}\nport:{self.port}\ntiming:{self.timing}')
             '''return value'''
             ret=True
         except:

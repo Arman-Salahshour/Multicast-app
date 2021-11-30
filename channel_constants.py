@@ -1,3 +1,4 @@
+'''general variables/ host and port are server's config'''
 host='127.0.0.1'
 port=65432
 txt_messageSize=1024
