@@ -7,6 +7,7 @@ format='utf-8'
 '''constant messages'''
 rqst_forTimeSchedule="send programs' time schedule"
 rqst_forImg="send current movie"
+rqst_forIpPort="send channels' ip and port"
 msg_active="msg: this chanel is active"
 end_moviesMsg="end of movies' schedule message"
 end_liveMovieNameMsg="end of live movie name message"

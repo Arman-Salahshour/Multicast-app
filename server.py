@@ -37,7 +37,6 @@ class Network:
 
 
     def connection_toClient(self,conn,addr,):
-            self.lock.acquire()
             
             with conn:
                     print(f"server is connected to {addr[0]}:{addr[1]}")
@@ -47,6 +46,7 @@ class Network:
                         
                         '''if a channel send message'''
                         if(applicant=='channel'):
+                            self.lock.acquire()
                             '''split the channel msg and number of channel'''
                             msg=recv_data[1]
                             channel=recv_data[2]
@@ -112,7 +112,18 @@ class Network:
                                 '''release thread lock'''
                                 self.lock.release()
                                 break
-                            
+
+                        elif applicant=='client':
+                            msg=recv_data[1]
+                            client_id=recv_data[2]
+                            if msg==rqst_forIpPort:
+                                channels_ipPort=self.channels[['number','host','port']].to_json(orient='records')
+                                conn.sendall(channels_ipPort.encode(format))
+                                time.sleep(0.25)
+                                conn.sendall(end_sending.encode(format))
+                            break
+
+
                         if not recv_data: 
                             break
                         else:
