@@ -2,6 +2,7 @@ host='127.0.0.1'
 port=65432
 txt_messageSize=1024
 img_messageSize=4096
+multicast_group='224.0.0.0'
 format='utf-8'
 
 '''constant messages'''

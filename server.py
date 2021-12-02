@@ -192,7 +192,7 @@ def get_channelFrame(num):
     })
     
     for i in range(num):
-        ip=host.split('.')
+        ip=multicast_group.split('.')
         ip[len(ip)-1]=str(int(ip[len(ip)-1])+i+1)
         ip=".".join(ip)
         df={

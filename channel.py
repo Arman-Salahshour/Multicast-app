@@ -60,8 +60,11 @@ class Network:
             print(recv)
         self.programs="".join(self.data)
         self.programs=json.loads(self.programs)
-        print(self.programs['movies'])
+    
+    def server(self):
+        pass
+
 
 if __name__=='__main__':
-    network=Network(1)
+    network=Network(2)
     
