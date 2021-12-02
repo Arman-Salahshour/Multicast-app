@@ -25,7 +25,8 @@ class Network:
         print(recv)
         self.channels_ipPort="".join(self.data)
         self.channels_ipPort=json.loads(self.channels_ipPort)
-        print(f"channels: f{self.channels_ipPort}")
+        self.channels_ipPort={item['number']:{'host':item['host'], 'port':item['port']} for item in self.channels_ipPort}
+        print(f"channels: {self.channels_ipPort}")
         self.data=[]
 
 
