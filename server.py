@@ -15,7 +15,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class Network:
-    def __init__(self,host,port,channels,data,keys,win):
+    def __init__(self,name,host,port,channels,data,keys,win):
+        self.name = name
         self.host = host
         self.port = port
         self.channels = channels
@@ -216,7 +217,7 @@ def get_channelFrame(num):
 
 
 
-def init():
+def init(name):
     '''extract frames from movies'''
     # frameConvertor.start(number=200,gap=5)
     '''convert frames and movies' description to json'''
@@ -230,9 +231,10 @@ def init():
     '''define ip/port for each channel'''
     channels=get_channelFrame(3)
     '''create an object for network'''
-    network=Network(host=host,port=port,channels=channels,data=json_movieImgDict,keys=movies_name,win=100)
+    network=Network(name=name,host=host,port=port,channels=channels,data=json_movieImgDict,keys=movies_name,win=100)
     '''run server to accept channels' client side request'''
     serverProtocol=threading.Thread(target=network.serverProtocol)
+    '''run server to get images from server and clients' request'''
     runChannel=threading.Thread(target=channel.init)
     serverProtocol.start()
     runChannel.start()
