@@ -1,7 +1,8 @@
 import os
 import numpy as np  
 from glob import glob
-import cv2    
+import cv2   
+import imutils  
 
 
 def make_dir(path):
@@ -26,6 +27,8 @@ def save_frame(video_path,save_dir,number=1000,gap=10):
         if ret == False: 
             cap.release()
             break
+        #determine frames resolution
+        frame=imutils.resize(frame,width=720)
         if index == 0:
             cv2.imwrite(f"{save_path}/{index}.png",frame)
         elif index % gap == 0:
@@ -42,4 +45,4 @@ def start(number=100,gap=10):
         save_frame(path,save_dir,number=number,gap=gap)
 
 if __name__ == '__main__':
-    start(number=200,gap=5)
+    start(number=400,gap=2)
