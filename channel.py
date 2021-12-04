@@ -33,7 +33,7 @@ class Network(threading.Thread):
             while True:
                 recv=soc.recv(txt_messageSize).decode(format)
                 if  recv==msg_receiving : 
-                    recv=msg_receivingTimeSchedule
+                    recv=f"channel {self.number} => "+msg_receivingTimeSchedule
                     break
                 elif recv==msg_active:
                     break
@@ -70,7 +70,7 @@ class Network(threading.Thread):
             while True:
                 recv=soc.recv(img_messageSize).decode(format)
                 if  recv==msg_receiving : 
-                    recv=msg_receivingImgs
+                    recv=f"channel {self.number} => "+msg_receivingImgs
                     break
                 else:
                     self.data.append(recv)
