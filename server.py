@@ -1,3 +1,4 @@
+import channel
 import frameConvertor
 import imageToJsonConvertor
 import json
@@ -8,7 +9,6 @@ import time
 import pandas as pd
 import random
 import numpy as np
-from _thread import *
 import threading
 import copy
 import warnings
@@ -232,7 +232,14 @@ def init():
     '''create an object for network'''
     network=Network(host=host,port=port,channels=channels,data=json_movieImgDict,keys=movies_name,win=100)
     '''run server to accept channels' client side request'''
-    network.serverProtocol()
+    serverProtocol=threading.Thread(target=network.serverProtocol)
+    runChannel=threading.Thread(target=channel.init)
+    serverProtocol.start()
+    runChannel.start()
+    serverProtocol.join()
+    runChannel.join()
+    
+
 
 
 

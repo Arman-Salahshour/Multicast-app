@@ -96,12 +96,7 @@ class Network(threading.Thread):
 
                     
 
-
-            
-
-
-
-if __name__=='__main__':
+def init():
     network=[]
     for i in range(1,4):
         net=Network(i)
@@ -109,6 +104,11 @@ if __name__=='__main__':
         network.append(net)
 
     for i in range(3):
-        network[i].join()
+        network[i].join()        
+
+
+
+if __name__=='__main__':
+    init()
   
     
