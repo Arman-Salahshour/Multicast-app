@@ -8,6 +8,7 @@ format='utf-8'
 '''constant messages'''
 rqst_forTimeSchedule="channel:send programs' time schedule"
 rqst_forImg="channel:send current movie"
+client_rqstForImgs="client:send movie's frames"
 msg_active="msg: this chanel is active"
 msg_receiving="The end"
 msg_receivingTimeSchedule="msg: receive programs' time schedule"
