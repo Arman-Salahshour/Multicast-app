@@ -53,16 +53,19 @@ class Network:
                             '''if a channel wants to run itself, it will send this message to receive ip,port for server side of itself and programs' schedule time'''
                             if msg==rqst_forTimeSchedule:
                                 '''if the channel is not active, the config file will be sent for the channel'''
-                                if (self.channels['active'][self.channels['number']==channel].all()==False):
+                                if (self.channels['active'][self.channels['number']==channel].values[0]==False):
                                     self.channels['active'].loc[self.channels['number']==channel]=True
                                     '''setTime function sets time for movies, specifically for each channel'''
                                     channelData=setTime(copy.deepcopy(self.data),self.keys)
-
+                                    
                                     '''set data in channels data frame'''
                                     self.channels['data'].loc[self.channels['number']==channel]=json.dumps(channelData)
                                     
                                     '''get movies' schedule time'''
                                     programs=self.get_livePrograms(channelData)[0]['movies']
+
+                                    '''set channels schedule time'''
+                                    self.channels['timing'].loc[self.channels['number']==channel]=json.dumps(programs)
 
                                     '''create channel's config dictionary'''
                                     config={
@@ -117,7 +120,7 @@ class Network:
                             msg=recv_data[1]
                             client_id=recv_data[2]
                             if msg==rqst_forIpPort:
-                                channels_ipPort=self.channels[['number','host','port']].to_json(orient='records')
+                                channels_ipPort=self.channels[['number','host','port','timing']].to_json(orient='records')
                                 conn.sendall(channels_ipPort.encode(format))
                                 time.sleep(0.25)
                                 conn.sendall(end_sending.encode(format))
@@ -175,10 +178,12 @@ def check_movieTime(data):
         programs['movies'][key]=time
         h1,h2=time.split('_')
         h1,h2=(int(h1),int(h2))
-        if hour >= h1 or hour < h2:
+        if hour >= h1 and hour < h2:
             programs['live']['name']=key
             programs['live']['size']=data[key]['size']
             programs['live']['imgs']=data[key]['imgs']
+
+    
     return programs
 
 def get_channelFrame(num):
@@ -188,13 +193,15 @@ def get_channelFrame(num):
         'port':[],
         'data':[],
         'active':[],
+        'timing':[]
 
     })
     
     for i in range(num):
-        ip=multicast_group.split('.')
+        ip=multicast_groupIP.split('.')
         ip[len(ip)-1]=str(int(ip[len(ip)-1])+i+1)
         ip=".".join(ip)
+        port=multicast_groupPort+i
         df={
         'number':f"{i+1}",
         'host':ip,
