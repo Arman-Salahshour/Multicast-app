@@ -5,10 +5,12 @@ from numpy import infty
 from client_constants import *
 import time
 import struct
+import os
 
 class Network:
-    def __init__(self,id):
+    def __init__(self,id,path):
         self.id = id
+        self.path = path
         self.data = []
         self.get_ipPort()
     
@@ -74,13 +76,25 @@ class Network:
                 temp=img['img']
                 temp=temp.encode(format)
                 temp=base64.decodebytes(temp)
-                with open(f'cache/index{num}.png','wb') as im:
+                with open(f'{self.path}index_{num}.png','wb') as im:
                     im.write(temp)
 
             
+def make_dir(path):
+    try:
+        if not os.path.exists(path):
+            os.makedirs(path)
+    except OSError:
+        print (f"Could not create directory with '{path}' name")
 
-    
+
+def init(id,channel):
+    path=f'cache/{id}/'
+    make_dir(path)
+    network=Network(id,path)
+    network.receive_data(f'{channel}')
+
 
 if __name__ == "__main__":
-    network=Network(1)
-    network.receive_data('1')
+    init(id='arman',channel=2)
+
