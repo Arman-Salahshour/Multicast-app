@@ -1,3 +1,4 @@
+from os import error
 from fastapi import FastAPI
 from pydantic import BaseModel
 import multiprocessing
@@ -14,15 +15,20 @@ app=FastAPI()
 @app.post('/start/')
 async def get_img(user:User):
     try:
-        """make a process for each client"""
-        process=multiprocessing.Process(target=client.init, args=(user.id,user.channel,))
+        data=client.init(user.id,user.channel)
+        """make a process for each client to recieve images"""
+        process=multiprocessing.Process(target=data['recieveData'], args=(f'{user.channel}',))
         process.start()
         process.join()
-        msg=f'Frames has saved'
-    except Exception as e:
-        msg=f'Frames has not saved'
+        msg=f'Frames have saved'
 
-    return {'msg':msg}
+        return {
+            'msg':msg,
+            'timing':data['timing'],
+        }
+    except Exception as e:
+        msg=f'Frames have not saved'
+        return {'msg':msg}
 
 
 

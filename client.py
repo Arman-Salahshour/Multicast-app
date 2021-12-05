@@ -92,7 +92,11 @@ def init(id,channel):
     path=f'cache/{id}/'
     make_dir(path)
     network=Network(id,path)
-    network.receive_data(f'{channel}')
+    # network.receive_data(f'{channel}')
+
+    return {'timing':network.channels_ipPort[f'{channel}']['timing'], 
+            'recieveData':network.receive_data}
+
 
 
 if __name__ == "__main__":
